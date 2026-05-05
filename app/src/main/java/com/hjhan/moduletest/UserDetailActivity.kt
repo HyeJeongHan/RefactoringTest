@@ -1,29 +1,29 @@
 package com.hjhan.moduletest
 
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.view.View
 import android.widget.Button
 import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import com.hjhan.moduletest.model.User
-import com.hjhan.moduletest.repository.UserRepository
+import com.hjhan.moduletest.ui.detail.UserDetailViewModel
 import com.hjhan.moduletest.util.Constants
 import com.hjhan.moduletest.util.DateUtils
 import dagger.hilt.android.AndroidEntryPoint
-import javax.inject.Inject
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class UserDetailActivity : AppCompatActivity() {
 
-    @Inject lateinit var userRepository: UserRepository
+    private val viewModel: UserDetailViewModel by viewModels()
 
-    private val handler = Handler(Looper.getMainLooper())
     private var userId: Int = -1
-    private var currentUser: User? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -43,28 +43,28 @@ class UserDetailActivity : AppCompatActivity() {
             title = userName ?: "사용자 정보"
         }
 
-        loadUserDetail()
+        observeViewModel()
+        viewModel.onIntent(UserDetailViewModel.Intent.LoadUser(userId))
     }
 
-    private fun loadUserDetail() {
-        showLoading(true)
-
-        userRepository.getUserById(userId, object : UserRepository.SingleUserCallback {
-            override fun onSuccess(user: User) {
-                currentUser = user
-                handler.post {
-                    showLoading(false)
-                    bindUserData(user)
+    private fun observeViewModel() {
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.uiState.collect { state ->
+                    when (state) {
+                        is UserDetailViewModel.UiState.Loading -> showLoading(true)
+                        is UserDetailViewModel.UiState.Success -> {
+                            showLoading(false)
+                            bindUserData(state.user)
+                        }
+                        is UserDetailViewModel.UiState.Error -> {
+                            showLoading(false)
+                            Toast.makeText(this@UserDetailActivity, "오류: ${state.message}", Toast.LENGTH_LONG).show()
+                        }
+                    }
                 }
             }
-
-            override fun onError(error: String) {
-                handler.post {
-                    showLoading(false)
-                    Toast.makeText(this@UserDetailActivity, "오류: $error", Toast.LENGTH_LONG).show()
-                }
-            }
-        })
+        }
     }
 
     private fun bindUserData(user: User) {
@@ -83,16 +83,14 @@ class UserDetailActivity : AppCompatActivity() {
         } ?: "-"
         findViewById<TextView>(R.id.tv_detail_company).text = companyText
 
-        val lastUpdated = DateUtils.formatTimestamp(user.lastUpdated)
-        findViewById<TextView>(R.id.tv_detail_last_updated).text = "마지막 업데이트: $lastUpdated"
+        findViewById<TextView>(R.id.tv_detail_last_updated).text =
+            "마지막 업데이트: ${DateUtils.formatTimestamp(user.lastUpdated)}"
 
         val btnFavorite = findViewById<Button>(R.id.btn_favorite)
         updateFavoriteButton(btnFavorite, user.isFavorite)
         btnFavorite.setOnClickListener {
             val newState = !user.isFavorite
-            userRepository.toggleFavorite(userId, newState)
-            user.isFavorite = newState
-            updateFavoriteButton(btnFavorite, newState)
+            viewModel.onIntent(UserDetailViewModel.Intent.ToggleFavorite(userId, newState))
             val msg = if (newState) "즐겨찾기에 추가했습니다" else "즐겨찾기에서 제거했습니다"
             Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
         }
@@ -110,8 +108,7 @@ class UserDetailActivity : AppCompatActivity() {
     }
 
     override fun onSupportNavigateUp(): Boolean {
-        @Suppress("DEPRECATION")
-        onBackPressed()
+        onBackPressedDispatcher.onBackPressed()
         return true
     }
 }
