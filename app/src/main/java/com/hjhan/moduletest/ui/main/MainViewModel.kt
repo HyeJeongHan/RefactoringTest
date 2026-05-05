@@ -40,6 +40,7 @@ class MainViewModel @Inject constructor(
     private var allUsers: List<User> = emptyList()
 
     val username: String get() = sharedPrefs.getUsername()
+    val isLoggedIn: Boolean get() = sharedPrefs.isLoggedIn()
 
     init {
         onIntent(Intent.LoadUsers)

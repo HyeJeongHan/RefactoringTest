@@ -54,13 +54,7 @@ class MainActivity : AppCompatActivity() {
         observeViewModel()
     }
 
-    private fun isLoggedIn(): Boolean {
-        // SharedPrefs는 ViewModel이 보유 — 로그인 여부는 ViewModel username으로 간접 확인
-        // 정확한 판단은 LoginActivity에서 처리, 여기선 MainViewModel 초기화 시 처리됨
-        return intent.getBooleanExtra("from_login", false)
-            .not()
-            .let { viewModel.username.isNotEmpty() || true }
-    }
+    private fun isLoggedIn(): Boolean = viewModel.isLoggedIn
 
     private fun initViews() {
         recyclerView = findViewById(R.id.recycler_view)

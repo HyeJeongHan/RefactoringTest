@@ -4,6 +4,7 @@ kotlin = "2.0.21"
 hilt = "2.51.1"
 ksp = "2.0.21-1.0.28"
 coroutines = "1.8.1"
+mockk = "1.13.12"
 lifecycleViewmodelKtx = "2.10.0"
 coreKtx = "1.18.0"
 junit = "4.13.2"
@@ -43,6 +44,8 @@ androidx-cardview = { group = "androidx.cardview", name = "cardview", version.re
 hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref = "hilt" }
 hilt-compiler = { group = "com.google.dagger", name = "hilt-compiler", version.ref = "hilt" }
 coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "coroutines" }
+coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "coroutines" }
+mockk = { group = "io.mockk", name = "mockk", version.ref = "mockk" }
 lifecycle-viewmodel-ktx = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-ktx", version.ref = "lifecycleViewmodelKtx" }
 
 [plugins]

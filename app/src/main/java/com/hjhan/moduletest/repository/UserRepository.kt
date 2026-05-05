@@ -26,11 +26,15 @@ class UserRepository @Inject constructor(
             if (cached.isNotEmpty()) return@withContext cached
         }
 
-        val users = apiService.getUsers()
-        users.forEach { it.lastUpdated = now }
-        userDao.saveUsers(users)
-        sharedPrefs.saveLastFetchTime(now)
-        users
+        try {
+            val users = apiService.getUsers()
+            users.forEach { it.lastUpdated = now }
+            userDao.saveUsers(users)
+            sharedPrefs.saveLastFetchTime(now)
+            users
+        } catch (e: Exception) {
+            userDao.getAllUsers().takeIf { it.isNotEmpty() } ?: throw e
+        }
     }
 
     suspend fun getUserById(id: Int): User = withContext(Dispatchers.IO) {
