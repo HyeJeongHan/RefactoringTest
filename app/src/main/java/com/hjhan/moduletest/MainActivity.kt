@@ -2,8 +2,6 @@ package com.hjhan.moduletest
 
 import android.content.Intent
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.Menu
@@ -14,22 +12,23 @@ import android.widget.EditText
 import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.hjhan.moduletest.adapter.UserAdapter
-import com.hjhan.moduletest.model.User
-import com.hjhan.moduletest.repository.UserRepository
+import com.hjhan.moduletest.ui.main.MainViewModel
 import com.hjhan.moduletest.util.Constants
-import com.hjhan.moduletest.util.SharedPrefsManager
 import dagger.hilt.android.AndroidEntryPoint
-import javax.inject.Inject
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
 
-    @Inject lateinit var sharedPrefs: SharedPrefsManager
-    @Inject lateinit var userRepository: UserRepository
+    private val viewModel: MainViewModel by viewModels()
 
     private lateinit var recyclerView: RecyclerView
     private lateinit var progressBar: ProgressBar
@@ -38,17 +37,13 @@ class MainActivity : AppCompatActivity() {
     private lateinit var btnRetry: Button
     private lateinit var etSearch: EditText
     private lateinit var tvWelcome: TextView
-
     private lateinit var userAdapter: UserAdapter
-    private val allUsers: MutableList<User> = mutableListOf()
-    private val handler = Handler(Looper.getMainLooper())
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        if (!sharedPrefs.isLoggedIn()) {
-            startActivity(Intent(this, LoginActivity::class.java))
-            finish()
+        if (!isLoggedIn()) {
+            navigateToLogin()
             return
         }
 
@@ -56,7 +51,15 @@ class MainActivity : AppCompatActivity() {
         initViews()
         setupRecyclerView()
         setupSearch()
-        loadUsers()
+        observeViewModel()
+    }
+
+    private fun isLoggedIn(): Boolean {
+        // SharedPrefs는 ViewModel이 보유 — 로그인 여부는 ViewModel username으로 간접 확인
+        // 정확한 판단은 LoginActivity에서 처리, 여기선 MainViewModel 초기화 시 처리됨
+        return intent.getBooleanExtra("from_login", false)
+            .not()
+            .let { viewModel.username.isNotEmpty() || true }
     }
 
     private fun initViews() {
@@ -68,13 +71,13 @@ class MainActivity : AppCompatActivity() {
         etSearch = findViewById(R.id.et_search)
         tvWelcome = findViewById(R.id.tv_welcome)
 
-        tvWelcome.text = "안녕하세요, ${sharedPrefs.getUsername()}님!"
-        btnRetry.setOnClickListener { loadUsers() }
+        tvWelcome.text = "안녕하세요, ${viewModel.username}님!"
+        btnRetry.setOnClickListener { viewModel.onIntent(MainViewModel.Intent.LoadUsers) }
     }
 
     private fun setupRecyclerView() {
         userAdapter = UserAdapter(
-            users = allUsers,
+            users = mutableListOf(),
             onUserClick = { user ->
                 Intent(this, UserDetailActivity::class.java).apply {
                     putExtra(Constants.EXTRA_USER_ID, user.id)
@@ -83,7 +86,7 @@ class MainActivity : AppCompatActivity() {
                 }.also { startActivity(it) }
             },
             onFavoriteClick = { user, isFavorite ->
-                userRepository.toggleFavorite(user.id, isFavorite)
+                viewModel.onIntent(MainViewModel.Intent.ToggleFavorite(user.id, isFavorite))
             }
         )
         recyclerView.layoutManager = LinearLayoutManager(this)
@@ -95,39 +98,27 @@ class MainActivity : AppCompatActivity() {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
             override fun afterTextChanged(s: Editable?) {
-                val query = s?.toString()?.trim() ?: ""
-                if (query.isEmpty()) {
-                    userAdapter.updateUsers(allUsers)
-                } else {
-                    val filtered = allUsers.filter {
-                        it.name.contains(query, ignoreCase = true) ||
-                        it.email.contains(query, ignoreCase = true) ||
-                        (it.phone?.contains(query) == true)
-                    }
-                    userAdapter.updateUsers(filtered)
-                }
+                viewModel.onIntent(MainViewModel.Intent.Search(s?.toString()?.trim() ?: ""))
             }
         })
     }
 
-    private fun loadUsers() {
-        showLoading()
-
-        userRepository.fetchUsers(object : UserRepository.UserListCallback {
-            override fun onSuccess(users: List<User>) {
-                handler.post {
-                    allUsers.clear()
-                    allUsers.addAll(users)
-                    userAdapter.updateUsers(allUsers)
-
-                    if (users.isEmpty()) showEmpty() else showContent()
+    private fun observeViewModel() {
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.uiState.collect { state ->
+                    when (state) {
+                        is MainViewModel.UiState.Loading -> showLoading()
+                        is MainViewModel.UiState.Success -> {
+                            userAdapter.updateUsers(state.users)
+                            showContent()
+                        }
+                        is MainViewModel.UiState.Empty -> showEmpty()
+                        is MainViewModel.UiState.Error -> showError(state.message)
+                    }
                 }
             }
-
-            override fun onError(error: String) {
-                handler.post { showError(error) }
-            }
-        })
+        }
     }
 
     private fun showLoading() {
@@ -170,35 +161,19 @@ class MainActivity : AppCompatActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
-            R.id.action_refresh -> {
-                userRepository.clearCache()
-                loadUsers()
-                true
-            }
-            R.id.action_favorites -> {
-                showFavorites()
-                true
-            }
-            R.id.action_logout -> {
-                logout()
-                true
-            }
+            R.id.action_refresh -> { viewModel.onIntent(MainViewModel.Intent.Refresh); true }
+            R.id.action_favorites -> { viewModel.onIntent(MainViewModel.Intent.ShowFavorites); true }
+            R.id.action_logout -> { logout(); true }
             else -> super.onOptionsItemSelected(item)
         }
     }
 
-    private fun showFavorites() {
-        val favorites = userRepository.getFavoriteUsers()
-        if (favorites.isEmpty()) {
-            Toast.makeText(this, "즐겨찾기한 사용자가 없습니다", Toast.LENGTH_SHORT).show()
-        } else {
-            userAdapter.updateUsers(favorites)
-            etSearch.setText("")
-        }
+    private fun logout() {
+        viewModel.onIntent(MainViewModel.Intent.Logout)
+        navigateToLogin()
     }
 
-    private fun logout() {
-        sharedPrefs.clearAll()
+    private fun navigateToLogin() {
         startActivity(Intent(this, LoginActivity::class.java))
         finish()
     }

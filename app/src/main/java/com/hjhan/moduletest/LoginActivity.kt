@@ -2,23 +2,24 @@ package com.hjhan.moduletest
 
 import android.content.Intent
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ProgressBar
 import android.widget.Toast
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import com.hjhan.moduletest.util.Constants
-import com.hjhan.moduletest.util.SharedPrefsManager
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
+import com.hjhan.moduletest.ui.login.LoginViewModel
 import dagger.hilt.android.AndroidEntryPoint
-import javax.inject.Inject
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class LoginActivity : AppCompatActivity() {
 
-    @Inject lateinit var sharedPrefsManager: SharedPrefsManager
+    private val viewModel: LoginViewModel by viewModels()
 
     private lateinit var etUsername: EditText
     private lateinit var etPassword: EditText
@@ -28,7 +29,7 @@ class LoginActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        if (sharedPrefsManager.isLoggedIn()) {
+        if (viewModel.isAlreadyLoggedIn) {
             navigateToMain()
             return
         }
@@ -36,6 +37,7 @@ class LoginActivity : AppCompatActivity() {
         setContentView(R.layout.activity_login)
         supportActionBar?.hide()
         initViews()
+        observeViewModel()
     }
 
     private fun initViews() {
@@ -66,28 +68,37 @@ class LoginActivity : AppCompatActivity() {
             return
         }
 
-        performLogin(username, password)
+        viewModel.onIntent(LoginViewModel.Intent.Login(username, password))
     }
 
-    private fun performLogin(username: String, password: String) {
-        progressBar.visibility = View.VISIBLE
-        btnLogin.isEnabled = false
-
-        Handler(Looper.getMainLooper()).postDelayed({
-            if (username == Constants.TEST_USERNAME && password == Constants.TEST_PASSWORD) {
-                sharedPrefsManager.setLoggedIn(true)
-                sharedPrefsManager.saveUsername(username)
-                sharedPrefsManager.saveUserToken("token_${System.currentTimeMillis()}")
-
-                progressBar.visibility = View.GONE
-                Toast.makeText(this, "로그인 성공!", Toast.LENGTH_SHORT).show()
-                navigateToMain()
-            } else {
-                progressBar.visibility = View.GONE
-                btnLogin.isEnabled = true
-                Toast.makeText(this, "아이디 또는 비밀번호가 올바르지 않습니다", Toast.LENGTH_LONG).show()
+    private fun observeViewModel() {
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.uiState.collect { state ->
+                    when (state) {
+                        is LoginViewModel.UiState.Idle -> {
+                            progressBar.visibility = View.GONE
+                            btnLogin.isEnabled = true
+                        }
+                        is LoginViewModel.UiState.Loading -> {
+                            progressBar.visibility = View.VISIBLE
+                            btnLogin.isEnabled = false
+                        }
+                        is LoginViewModel.UiState.Success -> {
+                            progressBar.visibility = View.GONE
+                            Toast.makeText(this@LoginActivity, "로그인 성공!", Toast.LENGTH_SHORT).show()
+                            navigateToMain()
+                        }
+                        is LoginViewModel.UiState.Error -> {
+                            progressBar.visibility = View.GONE
+                            btnLogin.isEnabled = true
+                            Toast.makeText(this@LoginActivity, state.message, Toast.LENGTH_LONG).show()
+                            viewModel.onIntent(LoginViewModel.Intent.ResetState)
+                        }
+                    }
+                }
             }
-        }, 1200)
+        }
     }
 
     private fun navigateToMain() {
