@@ -1,6 +1,7 @@
-package com.hjhan.moduletest.repository
+package com.hjhan.moduletest.data.repository
 
 import com.hjhan.moduletest.database.UserDao
+import com.hjhan.moduletest.domain.repository.UserRepository
 import com.hjhan.moduletest.model.User
 import com.hjhan.moduletest.network.ApiService
 import com.hjhan.moduletest.util.Constants
@@ -11,13 +12,13 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class UserRepository @Inject constructor(
+class UserRepositoryImpl @Inject constructor(
     private val userDao: UserDao,
     private val apiService: ApiService,
     private val sharedPrefs: SharedPrefsManager
-) {
+) : UserRepository {
 
-    suspend fun fetchUsers(): List<User> = withContext(Dispatchers.IO) {
+    override suspend fun fetchUsers(): List<User> = withContext(Dispatchers.IO) {
         val now = System.currentTimeMillis()
         val lastFetch = sharedPrefs.getLastFetchTime()
 
@@ -37,24 +38,24 @@ class UserRepository @Inject constructor(
         }
     }
 
-    suspend fun getUserById(id: Int): User = withContext(Dispatchers.IO) {
+    override suspend fun getUserById(id: Int): User = withContext(Dispatchers.IO) {
         userDao.getUserById(id) ?: run {
             val user = apiService.getUserById(id)
             user.lastUpdated = System.currentTimeMillis()
-            userDao.saveUser(user)
+            userDao.saveUsers(listOf(user))
             user
         }
     }
 
-    suspend fun toggleFavorite(userId: Int, isFavorite: Boolean) = withContext(Dispatchers.IO) {
+    override suspend fun toggleFavorite(userId: Int, isFavorite: Boolean) = withContext(Dispatchers.IO) {
         userDao.updateFavorite(userId, isFavorite)
     }
 
-    suspend fun getFavoriteUsers(): List<User> = withContext(Dispatchers.IO) {
+    override suspend fun getFavoriteUsers(): List<User> = withContext(Dispatchers.IO) {
         userDao.getFavoriteUsers()
     }
 
-    fun clearCache() {
+    override fun clearCache() {
         sharedPrefs.saveLastFetchTime(0L)
     }
 }

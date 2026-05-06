@@ -2,8 +2,9 @@ package com.hjhan.moduletest.ui.detail
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.hjhan.moduletest.domain.usecase.GetUserByIdUseCase
+import com.hjhan.moduletest.domain.usecase.ToggleFavoriteUseCase
 import com.hjhan.moduletest.model.User
-import com.hjhan.moduletest.repository.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -13,7 +14,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class UserDetailViewModel @Inject constructor(
-    private val userRepository: UserRepository
+    private val getUserByIdUseCase: GetUserByIdUseCase,
+    private val toggleFavoriteUseCase: ToggleFavoriteUseCase
 ) : ViewModel() {
 
     sealed class UiState {
@@ -40,7 +42,7 @@ class UserDetailViewModel @Inject constructor(
     private fun loadUser(userId: Int) {
         viewModelScope.launch {
             _uiState.value = UiState.Loading
-            runCatching { userRepository.getUserById(userId) }
+            runCatching { getUserByIdUseCase(userId) }
                 .onSuccess { _uiState.value = UiState.Success(it) }
                 .onFailure { _uiState.value = UiState.Error(it.message ?: "오류가 발생했습니다") }
         }
@@ -48,7 +50,7 @@ class UserDetailViewModel @Inject constructor(
 
     private fun toggleFavorite(userId: Int, isFavorite: Boolean) {
         viewModelScope.launch {
-            userRepository.toggleFavorite(userId, isFavorite)
+            toggleFavoriteUseCase(userId, isFavorite)
             val current = (_uiState.value as? UiState.Success)?.user ?: return@launch
             _uiState.value = UiState.Success(current.copy(isFavorite = isFavorite))
         }

@@ -2,10 +2,10 @@ package com.hjhan.moduletest.ui.login
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.hjhan.moduletest.domain.repository.AuthRepository
+import com.hjhan.moduletest.domain.usecase.LoginUseCase
 import com.hjhan.moduletest.util.Constants
-import com.hjhan.moduletest.util.SharedPrefsManager
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -14,7 +14,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class LoginViewModel @Inject constructor(
-    private val sharedPrefs: SharedPrefsManager
+    private val loginUseCase: LoginUseCase,
+    private val authRepository: AuthRepository
 ) : ViewModel() {
 
     sealed class UiState {
@@ -32,7 +33,7 @@ class LoginViewModel @Inject constructor(
     private val _uiState = MutableStateFlow<UiState>(UiState.Idle)
     val uiState: StateFlow<UiState> = _uiState.asStateFlow()
 
-    val isAlreadyLoggedIn: Boolean get() = sharedPrefs.isLoggedIn()
+    val isAlreadyLoggedIn: Boolean get() = authRepository.isLoggedIn()
 
     fun onIntent(intent: Intent) {
         when (intent) {
@@ -46,16 +47,9 @@ class LoginViewModel @Inject constructor(
 
         viewModelScope.launch {
             _uiState.value = UiState.Loading
-            delay(1200)
-
-            if (username == Constants.TEST_USERNAME && password == Constants.TEST_PASSWORD) {
-                sharedPrefs.setLoggedIn(true)
-                sharedPrefs.saveUsername(username)
-                sharedPrefs.saveUserToken("token_${System.currentTimeMillis()}")
-                _uiState.value = UiState.Success
-            } else {
-                _uiState.value = UiState.Error("아이디 또는 비밀번호가 올바르지 않습니다")
-            }
+            val success = loginUseCase(username, password)
+            _uiState.value = if (success) UiState.Success
+            else UiState.Error("아이디 또는 비밀번호가 올바르지 않습니다")
         }
     }
 }

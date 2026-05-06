@@ -1,8 +1,13 @@
 package com.hjhan.moduletest.ui.main
 
+import com.hjhan.moduletest.domain.repository.AuthRepository
+import com.hjhan.moduletest.domain.usecase.GetFavoriteUsersUseCase
+import com.hjhan.moduletest.domain.usecase.GetUsersUseCase
+import com.hjhan.moduletest.domain.usecase.LogoutUseCase
+import com.hjhan.moduletest.domain.usecase.RefreshUsersUseCase
+import com.hjhan.moduletest.domain.usecase.SearchUsersUseCase
+import com.hjhan.moduletest.domain.usecase.ToggleFavoriteUseCase
 import com.hjhan.moduletest.model.User
-import com.hjhan.moduletest.repository.UserRepository
-import com.hjhan.moduletest.util.SharedPrefsManager
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
@@ -23,8 +28,8 @@ import org.junit.Test
 class MainViewModelTest {
 
     private val testDispatcher = StandardTestDispatcher()
-    private lateinit var userRepository: UserRepository
-    private lateinit var sharedPrefs: SharedPrefsManager
+    private lateinit var getUsersUseCase: GetUsersUseCase
+    private lateinit var authRepository: AuthRepository
     private lateinit var viewModel: MainViewModel
 
     private val testUsers = listOf(
@@ -36,11 +41,11 @@ class MainViewModelTest {
     @Before
     fun setup() {
         Dispatchers.setMain(testDispatcher)
-        userRepository = mockk(relaxed = true)
-        sharedPrefs = mockk(relaxed = true)
-        every { sharedPrefs.getUsername() } returns "testuser"
-        every { sharedPrefs.isLoggedIn() } returns true
-        coEvery { userRepository.fetchUsers() } returns testUsers
+        getUsersUseCase = mockk()
+        authRepository = mockk(relaxed = true)
+        every { authRepository.getUsername() } returns "testuser"
+        every { authRepository.isLoggedIn() } returns true
+        coEvery { getUsersUseCase() } returns testUsers
     }
 
     @After
@@ -49,7 +54,15 @@ class MainViewModelTest {
     }
 
     private fun createViewModel(): MainViewModel {
-        return MainViewModel(userRepository, sharedPrefs)
+        return MainViewModel(
+            getUsersUseCase = getUsersUseCase,
+            refreshUsersUseCase = mockk(relaxed = true),
+            searchUsersUseCase = SearchUsersUseCase(),
+            getFavoriteUsersUseCase = mockk(relaxed = true),
+            toggleFavoriteUseCase = mockk(relaxed = true),
+            logoutUseCase = mockk(relaxed = true),
+            authRepository = authRepository
+        )
     }
 
     @Test
@@ -122,7 +135,7 @@ class MainViewModelTest {
 
     @Test
     fun `load users failure shows error state`() = runTest {
-        coEvery { userRepository.fetchUsers() } throws RuntimeException("네트워크 오류")
+        coEvery { getUsersUseCase() } throws RuntimeException("네트워크 오류")
         viewModel = createViewModel()
         advanceUntilIdle()
 
