@@ -42,7 +42,7 @@ class LoginViewModel @Inject constructor(
     }
 
     private fun login(username: String, password: String) {
-        if (username.isBlank() || password.isBlank() || password.length < 4) return
+        if (username.isBlank() || password.isBlank() || password.length < Constants.MIN_PASSWORD_LENGTH) return
 
         viewModelScope.launch {
             _uiState.value = UiState.Loading

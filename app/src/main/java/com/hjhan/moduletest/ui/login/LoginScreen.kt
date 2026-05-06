@@ -32,6 +32,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.hjhan.moduletest.R
 import com.hjhan.moduletest.ui.theme.ModuleTestTheme
+import com.hjhan.moduletest.util.Constants
 
 @Composable
 fun LoginScreen(
@@ -148,7 +149,7 @@ fun LoginContent(
                     if (password.isBlank()) {
                         passwordError = errorPasswordEmpty
                         valid = false
-                    } else if (password.length < 4) {
+                    } else if (password.length < Constants.MIN_PASSWORD_LENGTH) {
                         passwordError = errorPasswordLength
                         valid = false
                     }
