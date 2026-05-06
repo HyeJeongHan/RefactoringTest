@@ -99,6 +99,17 @@ class MainViewModel @Inject constructor(
     private fun toggleFavorite(userId: Int, isFavorite: Boolean) {
         viewModelScope.launch {
             userRepository.toggleFavorite(userId, isFavorite)
+            allUsers = allUsers.map { user ->
+                if (user.id == userId) user.copy(isFavorite = isFavorite) else user
+            }
+            val current = _uiState.value
+            if (current is UiState.Success) {
+                _uiState.value = UiState.Success(
+                    current.users.map { user ->
+                        if (user.id == userId) user.copy(isFavorite = isFavorite) else user
+                    }
+                )
+            }
         }
     }
 
