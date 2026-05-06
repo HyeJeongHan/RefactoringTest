@@ -1,4 +1,4 @@
-package com.hjhan.moduletest
+package com.hjhan.moduletest.ui.login
 
 import android.content.Intent
 import android.os.Bundle
@@ -12,7 +12,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import com.hjhan.moduletest.ui.login.LoginViewModel
+import com.hjhan.moduletest.ui.main.MainActivity
+import com.hjhan.moduletest.R
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 

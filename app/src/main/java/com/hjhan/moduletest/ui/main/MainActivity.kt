@@ -1,4 +1,4 @@
-package com.hjhan.moduletest
+package com.hjhan.moduletest.ui.main
 
 import android.content.Intent
 import android.os.Bundle
@@ -11,7 +11,6 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.ProgressBar
 import android.widget.TextView
-import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Lifecycle
@@ -19,8 +18,10 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.hjhan.moduletest.R
+import com.hjhan.moduletest.ui.detail.UserDetailActivity
 import com.hjhan.moduletest.adapter.UserAdapter
-import com.hjhan.moduletest.ui.main.MainViewModel
+import com.hjhan.moduletest.ui.login.LoginActivity
 import com.hjhan.moduletest.util.Constants
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch

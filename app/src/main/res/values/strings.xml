@@ -1,3 +1,20 @@
 <resources>
     <string name="app_name">ModuleTest</string>
+
+    <string name="invalid_access">잘못된 접근입니다</string>
+    <string name="user_info">사용자 정보</string>
+    <string name="error_format">오류: %s</string>
+
+    <string name="label_name">이름</string>
+    <string name="label_email">이메일</string>
+    <string name="label_phone">전화</string>
+    <string name="label_website">웹사이트</string>
+    <string name="label_address">주소</string>
+    <string name="label_company">회사</string>
+    <string name="label_last_updated">마지막 업데이트</string>
+
+    <string name="favorite_add">☆ 즐겨찾기 추가</string>
+    <string name="favorite_remove">★ 즐겨찾기 해제</string>
+
+    <string name="navigate_up">뒤로가기</string>
 </resources>
