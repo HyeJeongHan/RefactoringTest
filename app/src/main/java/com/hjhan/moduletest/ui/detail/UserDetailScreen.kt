@@ -72,7 +72,7 @@ fun UserDetailContent(
                     IconButton(onClick = onNavigateUp) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = null
+                            contentDescription = stringResource(R.string.navigate_up)
                         )
                     }
                 }

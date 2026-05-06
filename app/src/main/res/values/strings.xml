@@ -15,4 +15,6 @@
 
     <string name="favorite_add">☆ 즐겨찾기 추가</string>
     <string name="favorite_remove">★ 즐겨찾기 해제</string>
+
+    <string name="navigate_up">뒤로가기</string>
 </resources>
