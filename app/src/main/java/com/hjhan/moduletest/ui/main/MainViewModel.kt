@@ -2,14 +2,15 @@ package com.hjhan.moduletest.ui.main
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.hjhan.moduletest.domain.repository.AuthRepository
+import com.hjhan.moduletest.domain.model.User
 import com.hjhan.moduletest.domain.usecase.GetFavoriteUsersUseCase
+import com.hjhan.moduletest.domain.usecase.GetUsernameUseCase
 import com.hjhan.moduletest.domain.usecase.GetUsersUseCase
+import com.hjhan.moduletest.domain.usecase.IsLoggedInUseCase
 import com.hjhan.moduletest.domain.usecase.LogoutUseCase
 import com.hjhan.moduletest.domain.usecase.RefreshUsersUseCase
 import com.hjhan.moduletest.domain.usecase.SearchUsersUseCase
 import com.hjhan.moduletest.domain.usecase.ToggleFavoriteUseCase
-import com.hjhan.moduletest.model.User
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -25,7 +26,8 @@ class MainViewModel @Inject constructor(
     private val getFavoriteUsersUseCase: GetFavoriteUsersUseCase,
     private val toggleFavoriteUseCase: ToggleFavoriteUseCase,
     private val logoutUseCase: LogoutUseCase,
-    private val authRepository: AuthRepository
+    private val getUsernameUseCase: GetUsernameUseCase,
+    private val isLoggedInUseCase: IsLoggedInUseCase
 ) : ViewModel() {
 
     sealed class UiState {
@@ -49,8 +51,8 @@ class MainViewModel @Inject constructor(
 
     private var allUsers: List<User> = emptyList()
 
-    val username: String get() = authRepository.getUsername()
-    val isLoggedIn: Boolean get() = authRepository.isLoggedIn()
+    val username: String get() = getUsernameUseCase()
+    val isLoggedIn: Boolean get() = isLoggedInUseCase()
 
     init {
         onIntent(Intent.LoadUsers)
@@ -67,24 +69,14 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    private fun loadUsers() {
-        viewModelScope.launch {
-            _uiState.value = UiState.Loading
-            runCatching { getUsersUseCase() }
-                .onSuccess { users ->
-                    allUsers = users
-                    _uiState.value = if (users.isEmpty()) UiState.Empty else UiState.Success(users)
-                }
-                .onFailure { e ->
-                    _uiState.value = UiState.Error(e.message ?: "네트워크 오류")
-                }
-        }
-    }
+    private fun loadUsers() = fetchAndUpdate { getUsersUseCase() }
 
-    private fun refresh() {
+    private fun refresh() = fetchAndUpdate { refreshUsersUseCase() }
+
+    private fun fetchAndUpdate(block: suspend () -> List<User>) {
         viewModelScope.launch {
             _uiState.value = UiState.Loading
-            runCatching { refreshUsersUseCase() }
+            runCatching { block() }
                 .onSuccess { users ->
                     allUsers = users
                     _uiState.value = if (users.isEmpty()) UiState.Empty else UiState.Success(users)

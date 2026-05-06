@@ -1,13 +1,14 @@
 package com.hjhan.moduletest.ui.main
 
-import com.hjhan.moduletest.domain.repository.AuthRepository
+import com.hjhan.moduletest.domain.model.User
 import com.hjhan.moduletest.domain.usecase.GetFavoriteUsersUseCase
+import com.hjhan.moduletest.domain.usecase.GetUsernameUseCase
 import com.hjhan.moduletest.domain.usecase.GetUsersUseCase
+import com.hjhan.moduletest.domain.usecase.IsLoggedInUseCase
 import com.hjhan.moduletest.domain.usecase.LogoutUseCase
 import com.hjhan.moduletest.domain.usecase.RefreshUsersUseCase
 import com.hjhan.moduletest.domain.usecase.SearchUsersUseCase
 import com.hjhan.moduletest.domain.usecase.ToggleFavoriteUseCase
-import com.hjhan.moduletest.model.User
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
@@ -29,7 +30,8 @@ class MainViewModelTest {
 
     private val testDispatcher = StandardTestDispatcher()
     private lateinit var getUsersUseCase: GetUsersUseCase
-    private lateinit var authRepository: AuthRepository
+    private lateinit var getUsernameUseCase: GetUsernameUseCase
+    private lateinit var isLoggedInUseCase: IsLoggedInUseCase
     private lateinit var viewModel: MainViewModel
 
     private val testUsers = listOf(
@@ -42,9 +44,10 @@ class MainViewModelTest {
     fun setup() {
         Dispatchers.setMain(testDispatcher)
         getUsersUseCase = mockk()
-        authRepository = mockk(relaxed = true)
-        every { authRepository.getUsername() } returns "testuser"
-        every { authRepository.isLoggedIn() } returns true
+        getUsernameUseCase = mockk()
+        isLoggedInUseCase = mockk()
+        every { getUsernameUseCase() } returns "testuser"
+        every { isLoggedInUseCase() } returns true
         coEvery { getUsersUseCase() } returns testUsers
     }
 
@@ -61,7 +64,8 @@ class MainViewModelTest {
             getFavoriteUsersUseCase = mockk(relaxed = true),
             toggleFavoriteUseCase = mockk(relaxed = true),
             logoutUseCase = mockk(relaxed = true),
-            authRepository = authRepository
+            getUsernameUseCase = getUsernameUseCase,
+            isLoggedInUseCase = isLoggedInUseCase
         )
     }
 

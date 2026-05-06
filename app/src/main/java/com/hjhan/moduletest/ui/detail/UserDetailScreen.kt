@@ -32,9 +32,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.hjhan.moduletest.R
-import com.hjhan.moduletest.model.Address
-import com.hjhan.moduletest.model.Company
-import com.hjhan.moduletest.model.User
+import com.hjhan.moduletest.domain.model.Address
+import com.hjhan.moduletest.domain.model.Company
+import com.hjhan.moduletest.domain.model.User
 import com.hjhan.moduletest.ui.theme.ModuleTestTheme
 import com.hjhan.moduletest.util.DateUtils
 

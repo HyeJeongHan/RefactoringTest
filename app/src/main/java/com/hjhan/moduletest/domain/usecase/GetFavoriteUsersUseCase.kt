@@ -1,7 +1,7 @@
 package com.hjhan.moduletest.domain.usecase
 
 import com.hjhan.moduletest.domain.repository.UserRepository
-import com.hjhan.moduletest.model.User
+import com.hjhan.moduletest.domain.model.User
 import javax.inject.Inject
 
 class GetFavoriteUsersUseCase @Inject constructor(

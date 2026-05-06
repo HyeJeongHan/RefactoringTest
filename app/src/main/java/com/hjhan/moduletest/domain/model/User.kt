@@ -1,4 +1,4 @@
-package com.hjhan.moduletest.model
+package com.hjhan.moduletest.domain.model
 
 import com.google.gson.annotations.SerializedName
 

@@ -2,7 +2,7 @@ package com.hjhan.moduletest.data.repository
 
 import com.hjhan.moduletest.database.UserDao
 import com.hjhan.moduletest.domain.repository.UserRepository
-import com.hjhan.moduletest.model.User
+import com.hjhan.moduletest.domain.model.User
 import com.hjhan.moduletest.network.ApiService
 import com.hjhan.moduletest.util.Constants
 import com.hjhan.moduletest.util.SharedPrefsManager

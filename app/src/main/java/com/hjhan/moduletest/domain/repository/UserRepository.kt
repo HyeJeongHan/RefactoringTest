@@ -1,6 +1,6 @@
 package com.hjhan.moduletest.domain.repository
 
-import com.hjhan.moduletest.model.User
+import com.hjhan.moduletest.domain.model.User
 
 interface UserRepository {
     suspend fun fetchUsers(): List<User>

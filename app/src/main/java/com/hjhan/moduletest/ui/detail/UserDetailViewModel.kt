@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.hjhan.moduletest.domain.usecase.GetUserByIdUseCase
 import com.hjhan.moduletest.domain.usecase.ToggleFavoriteUseCase
-import com.hjhan.moduletest.model.User
+import com.hjhan.moduletest.domain.model.User
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

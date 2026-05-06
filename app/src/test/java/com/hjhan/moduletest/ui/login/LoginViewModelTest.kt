@@ -1,6 +1,6 @@
 package com.hjhan.moduletest.ui.login
 
-import com.hjhan.moduletest.domain.repository.AuthRepository
+import com.hjhan.moduletest.domain.usecase.IsLoggedInUseCase
 import com.hjhan.moduletest.domain.usecase.LoginUseCase
 import com.hjhan.moduletest.util.Constants
 import io.mockk.coEvery
@@ -24,16 +24,16 @@ class LoginViewModelTest {
 
     private val testDispatcher = StandardTestDispatcher()
     private lateinit var loginUseCase: LoginUseCase
-    private lateinit var authRepository: AuthRepository
+    private lateinit var isLoggedInUseCase: IsLoggedInUseCase
     private lateinit var viewModel: LoginViewModel
 
     @Before
     fun setup() {
         Dispatchers.setMain(testDispatcher)
         loginUseCase = mockk()
-        authRepository = mockk(relaxed = true)
-        every { authRepository.isLoggedIn() } returns false
-        viewModel = LoginViewModel(loginUseCase, authRepository)
+        isLoggedInUseCase = mockk()
+        every { isLoggedInUseCase() } returns false
+        viewModel = LoginViewModel(loginUseCase, isLoggedInUseCase)
     }
 
     @After

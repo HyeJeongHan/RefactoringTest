@@ -1,9 +1,9 @@
 package com.hjhan.moduletest.database
 
 import android.content.ContentValues
-import com.hjhan.moduletest.model.Address
-import com.hjhan.moduletest.model.Company
-import com.hjhan.moduletest.model.User
+import com.hjhan.moduletest.domain.model.Address
+import com.hjhan.moduletest.domain.model.Company
+import com.hjhan.moduletest.domain.model.User
 
 class UserDao(private val dbHelper: DatabaseHelper) {
 

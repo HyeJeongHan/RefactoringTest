@@ -2,7 +2,7 @@ package com.hjhan.moduletest.ui.login
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.hjhan.moduletest.domain.repository.AuthRepository
+import com.hjhan.moduletest.domain.usecase.IsLoggedInUseCase
 import com.hjhan.moduletest.domain.usecase.LoginUseCase
 import com.hjhan.moduletest.util.Constants
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -15,7 +15,7 @@ import javax.inject.Inject
 @HiltViewModel
 class LoginViewModel @Inject constructor(
     private val loginUseCase: LoginUseCase,
-    private val authRepository: AuthRepository
+    private val isLoggedInUseCase: IsLoggedInUseCase
 ) : ViewModel() {
 
     sealed class UiState {
@@ -33,7 +33,7 @@ class LoginViewModel @Inject constructor(
     private val _uiState = MutableStateFlow<UiState>(UiState.Idle)
     val uiState: StateFlow<UiState> = _uiState.asStateFlow()
 
-    val isAlreadyLoggedIn: Boolean get() = authRepository.isLoggedIn()
+    val isAlreadyLoggedIn: Boolean get() = isLoggedInUseCase()
 
     fun onIntent(intent: Intent) {
         when (intent) {

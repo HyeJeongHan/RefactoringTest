@@ -1,6 +1,6 @@
 package com.hjhan.moduletest.network
 
-import com.hjhan.moduletest.model.User
+import com.hjhan.moduletest.domain.model.User
 import retrofit2.http.GET
 import retrofit2.http.Path
 
