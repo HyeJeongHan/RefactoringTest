@@ -1,7 +1,5 @@
 package com.hjhan.moduletest.domain.model
 
-import com.google.gson.annotations.SerializedName
-
 data class User(
     val id: Int,
     val name: String,
@@ -11,8 +9,8 @@ data class User(
     val website: String?,
     val address: Address?,
     val company: Company?,
-    var lastUpdated: Long = 0L,
-    var isFavorite: Boolean = false
+    val lastUpdated: Long = 0L,
+    val isFavorite: Boolean = false
 )
 
 data class Address(
@@ -24,5 +22,5 @@ data class Address(
 
 data class Company(
     val name: String,
-    @SerializedName("catchPhrase") val catchPhrase: String
+    val catchPhrase: String
 )

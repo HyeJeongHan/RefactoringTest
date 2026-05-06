@@ -1,24 +1,25 @@
 package com.hjhan.moduletest.data.repository
 
+import com.hjhan.moduletest.data.local.preferences.AppPreferences
 import com.hjhan.moduletest.domain.repository.AuthRepository
-import com.hjhan.moduletest.util.SharedPrefsManager
+import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class AuthRepositoryImpl @Inject constructor(
-    private val sharedPrefs: SharedPrefsManager
+    private val appPreferences: AppPreferences
 ) : AuthRepository {
 
-    override fun isLoggedIn(): Boolean = sharedPrefs.isLoggedIn()
+    override fun isLoggedIn(): Boolean = appPreferences.isLoggedIn()
 
-    override fun getUsername(): String = sharedPrefs.getUsername()
+    override fun getUsername(): String = appPreferences.getUsername()
 
-    override fun login(username: String, token: String) {
-        sharedPrefs.setLoggedIn(true)
-        sharedPrefs.saveUsername(username)
-        sharedPrefs.saveUserToken(token)
+    override suspend fun login(username: String, token: String) {
+        appPreferences.saveLoggedIn(true)
+        appPreferences.saveUsername(username)
+        appPreferences.saveUserToken(token)
     }
 
-    override fun logout() = sharedPrefs.clearAll()
+    override fun logout() = runBlocking { appPreferences.clearAuth() }
 }

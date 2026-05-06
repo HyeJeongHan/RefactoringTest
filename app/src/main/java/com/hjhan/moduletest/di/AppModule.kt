@@ -1,8 +1,9 @@
 package com.hjhan.moduletest.di
 
 import android.content.Context
-import com.hjhan.moduletest.database.DatabaseHelper
-import com.hjhan.moduletest.database.UserDao
+import androidx.room.Room
+import com.hjhan.moduletest.data.local.AppDatabase
+import com.hjhan.moduletest.data.local.dao.UserRoomDao
 import com.hjhan.moduletest.network.ApiService
 import com.hjhan.moduletest.util.Constants
 import dagger.Module
@@ -22,12 +23,14 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideDatabaseHelper(@ApplicationContext context: Context): DatabaseHelper =
-        DatabaseHelper.getInstance(context)
+    fun provideAppDatabase(@ApplicationContext context: Context): AppDatabase =
+        Room.databaseBuilder(context, AppDatabase::class.java, "app.db")
+            .fallbackToDestructiveMigration()
+            .build()
 
     @Provides
     @Singleton
-    fun provideUserDao(dbHelper: DatabaseHelper): UserDao = UserDao(dbHelper)
+    fun provideUserDao(db: AppDatabase): UserRoomDao = db.userDao()
 
     @Provides
     @Singleton

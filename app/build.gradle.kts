@@ -76,6 +76,10 @@ dependencies {
     implementation(libs.hilt.navigation.compose)
     implementation(libs.coroutines.android)
     implementation(libs.lifecycle.viewmodel.ktx)
+    implementation(libs.room.runtime)
+    implementation(libs.room.ktx)
+    ksp(libs.room.compiler)
+    implementation(libs.datastore.preferences)
 
     testImplementation(libs.junit)
     testImplementation(libs.coroutines.test)
