@@ -25,4 +25,14 @@
     <string name="error_username_empty">아이디를 입력해주세요</string>
     <string name="error_password_empty">비밀번호를 입력해주세요</string>
     <string name="error_password_length">비밀번호는 4자 이상이어야 합니다</string>
+
+    <string name="welcome_message">안녕하세요, %s님!</string>
+    <string name="search_hint">이름 또는 이메일 검색</string>
+    <string name="text_empty">사용자가 없습니다</string>
+    <string name="text_no_phone">번호 없음</string>
+    <string name="menu_refresh">새로고침</string>
+    <string name="menu_favorites">즐겨찾기</string>
+    <string name="menu_logout">로그아웃</string>
+    <string name="btn_retry">다시 시도</string>
+    <string name="label_more_menu">더보기</string>
 </resources>
