@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "409186983318",
+    "project_id": "refactoringtest",
+    "storage_bucket": "refactoringtest.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:409186983318:android:987f3442231086401a91b7",
+        "android_client_info": {
+          "package_name": "com.hjhan.moduletest"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCWrIeGt6I5fs7w1NWvM1sD5HihYwfWpBU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
