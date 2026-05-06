@@ -1,10 +1,11 @@
 package com.hjhan.moduletest.ui.login
 
+import com.hjhan.moduletest.domain.repository.AuthRepository
+import com.hjhan.moduletest.domain.usecase.LoginUseCase
 import com.hjhan.moduletest.util.Constants
-import com.hjhan.moduletest.util.SharedPrefsManager
+import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.verify
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -22,15 +23,17 @@ import org.junit.Test
 class LoginViewModelTest {
 
     private val testDispatcher = StandardTestDispatcher()
-    private lateinit var sharedPrefs: SharedPrefsManager
+    private lateinit var loginUseCase: LoginUseCase
+    private lateinit var authRepository: AuthRepository
     private lateinit var viewModel: LoginViewModel
 
     @Before
     fun setup() {
         Dispatchers.setMain(testDispatcher)
-        sharedPrefs = mockk(relaxed = true)
-        every { sharedPrefs.isLoggedIn() } returns false
-        viewModel = LoginViewModel(sharedPrefs)
+        loginUseCase = mockk()
+        authRepository = mockk(relaxed = true)
+        every { authRepository.isLoggedIn() } returns false
+        viewModel = LoginViewModel(loginUseCase, authRepository)
     }
 
     @After
@@ -40,16 +43,18 @@ class LoginViewModelTest {
 
     @Test
     fun `login success with correct credentials`() = runTest {
+        coEvery { loginUseCase(Constants.TEST_USERNAME, Constants.TEST_PASSWORD) } returns true
+
         viewModel.onIntent(LoginViewModel.Intent.Login(Constants.TEST_USERNAME, Constants.TEST_PASSWORD))
         advanceUntilIdle()
 
         assertEquals(LoginViewModel.UiState.Success, viewModel.uiState.value)
-        verify { sharedPrefs.setLoggedIn(true) }
-        verify { sharedPrefs.saveUsername(Constants.TEST_USERNAME) }
     }
 
     @Test
     fun `login failure with wrong password`() = runTest {
+        coEvery { loginUseCase(any(), any()) } returns false
+
         viewModel.onIntent(LoginViewModel.Intent.Login(Constants.TEST_USERNAME, "wrongpassword"))
         advanceUntilIdle()
 
@@ -58,6 +63,8 @@ class LoginViewModelTest {
 
     @Test
     fun `login failure with wrong username`() = runTest {
+        coEvery { loginUseCase(any(), any()) } returns false
+
         viewModel.onIntent(LoginViewModel.Intent.Login("wronguser", Constants.TEST_PASSWORD))
         advanceUntilIdle()
 
@@ -82,6 +89,8 @@ class LoginViewModelTest {
 
     @Test
     fun `reset state returns to idle`() = runTest {
+        coEvery { loginUseCase(any(), any()) } returns false
+
         viewModel.onIntent(LoginViewModel.Intent.Login(Constants.TEST_USERNAME, "wrongpassword"))
         advanceUntilIdle()
 
