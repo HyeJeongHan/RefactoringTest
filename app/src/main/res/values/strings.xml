@@ -17,4 +17,12 @@
     <string name="favorite_remove">★ 즐겨찾기 해제</string>
 
     <string name="navigate_up">뒤로가기</string>
+
+    <string name="hint_username">아이디</string>
+    <string name="hint_password">비밀번호</string>
+    <string name="btn_login">로그인</string>
+    <string name="login_hint">테스트 계정: admin / 1234</string>
+    <string name="error_username_empty">아이디를 입력해주세요</string>
+    <string name="error_password_empty">비밀번호를 입력해주세요</string>
+    <string name="error_password_length">비밀번호는 4자 이상이어야 합니다</string>
 </resources>

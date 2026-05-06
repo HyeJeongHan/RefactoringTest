@@ -9,6 +9,8 @@ object Constants {
     const val TEST_USERNAME = "admin"
     const val TEST_PASSWORD = "1234"
 
+    const val MIN_PASSWORD_LENGTH = 4
+
     const val DEFAULT_CACHE_DURATION_MS = 5 * 60 * 1000L // 5분
 
     // Intent extra 키
