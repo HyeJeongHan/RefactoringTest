@@ -1,5 +1,7 @@
 *.jks
 *.keystore
+.claude/
+AGENTS.md
 app/release/
 *.iml
 .gradle
